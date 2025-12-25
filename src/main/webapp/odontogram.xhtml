@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
+
+<h:head>
+    <title>Odontograma</title>
+    <h:outputStylesheet name="css/odontogram.css"/>
+    <meta name="viewport" content="width=1024"/>
+</h:head>
+
+<h:body>
+    <div class="main-container">
+        <h:form id="odontogramForm">
+            <p:growl id="messages" showDetail="true"/>
+
+            <div class="grid-container">
+                <!-- Left Panel: Odontogram (60%) -->
+                <p:outputPanel id="odontogramPanel" styleClass="odontogram-panel">
+                    <h2 class="panel-title">Odontograma</h2>
+
+                    <div class="odontogram">
+                        <!-- Upper Jaw -->
+                        <div class="jaw upper-jaw">
+                            <div class="quadrant upper-right">
+                                <ui:repeat value="#{odontogramBean.upperRightTeeth}" var="tooth">
+                                    <p:commandButton value="#{tooth}"
+                                                     styleClass="tooth-btn #{odontogramBean.getToothStyle(tooth)}"
+                                                     action="#{odontogramBean.selectTooth(tooth)}"
+                                                     update=":odontogramForm:odontogramPanel :odontogramForm:infoPanel :odontogramForm:messages"
+                                                     process="@this"/>
+                                </ui:repeat>
+                            </div>
+                            <div class="jaw-center-line"></div>
+                            <div class="quadrant upper-left">
+                                <ui:repeat value="#{odontogramBean.upperLeftTeeth}" var="tooth">
+                                    <p:commandButton value="#{tooth}"
+                                                     styleClass="tooth-btn #{odontogramBean.getToothStyle(tooth)}"
+                                                     action="#{odontogramBean.selectTooth(tooth)}"
+                                                     update=":odontogramForm:odontogramPanel :odontogramForm:infoPanel :odontogramForm:messages"
+                                                     process="@this"/>
+                                </ui:repeat>
+                            </div>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="jaw-divider"></div>
+
+                        <!-- Lower Jaw -->
+                        <div class="jaw lower-jaw">
+                            <div class="quadrant lower-right">
+                                <ui:repeat value="#{odontogramBean.lowerRightTeeth}" var="tooth">
+                                    <p:commandButton value="#{tooth}"
+                                                     styleClass="tooth-btn #{odontogramBean.getToothStyle(tooth)}"
+                                                     action="#{odontogramBean.selectTooth(tooth)}"
+                                                     update=":odontogramForm:odontogramPanel :odontogramForm:infoPanel :odontogramForm:messages"
+                                                     process="@this"/>
+                                </ui:repeat>
+                            </div>
+                            <div class="jaw-center-line"></div>
+                            <div class="quadrant lower-left">
+                                <ui:repeat value="#{odontogramBean.lowerLeftTeeth}" var="tooth">
+                                    <p:commandButton value="#{tooth}"
+                                                     styleClass="tooth-btn #{odontogramBean.getToothStyle(tooth)}"
+                                                     action="#{odontogramBean.selectTooth(tooth)}"
+                                                     update=":odontogramForm:odontogramPanel :odontogramForm:infoPanel :odontogramForm:messages"
+                                                     process="@this"/>
+                                </ui:repeat>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="legend">
+                        <div class="legend-item">
+                            <span class="legend-color selected"></span>
+                            <span>Seleccionado</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color has-note"></span>
+                            <span>Con nota</span>
+                        </div>
+                    </div>
+                </p:outputPanel>
+
+                <!-- Right Panel: Info (40%) -->
+                <p:outputPanel id="infoPanel" styleClass="info-panel">
+                    <h2 class="panel-title">
+                        Diente
+                        <span class="tooth-number">
+                            #{odontogramBean.selectedTooth != null ? odontogramBean.selectedTooth : '-'}
+                        </span>
+                    </h2>
+
+                    <p:outputPanel rendered="#{odontogramBean.selectedTooth != null}">
+                        <div class="note-section">
+                            <label for="noteInput">Nota:</label>
+                            <p:inputTextarea id="noteInput"
+                                           value="#{odontogramBean.currentNote}"
+                                           rows="6"
+                                           placeholder="Ingrese una nota para este diente..."
+                                           styleClass="note-input"/>
+                        </div>
+
+                        <div class="button-section">
+                            <p:commandButton value="Guardar"
+                                           action="#{odontogramBean.saveNote()}"
+                                           update=":odontogramForm:messages :odontogramForm:infoPanel :odontogramForm:notesTable :odontogramForm:odontogramPanel"
+                                           styleClass="save-btn"
+                                           icon="pi pi-save"/>
+                        </div>
+                    </p:outputPanel>
+
+                    <p:outputPanel rendered="#{odontogramBean.selectedTooth == null}">
+                        <p class="no-selection">Seleccione un diente para ver sus detalles</p>
+                    </p:outputPanel>
+                </p:outputPanel>
+            </div>
+
+            <!-- Notes Table -->
+            <div class="notes-table-container">
+                <h2 class="panel-title">Notas Registradas</h2>
+                <p:dataTable id="notesTable"
+                             value="#{odontogramBean.allNotes}"
+                             var="note"
+                             emptyMessage="No hay notas registradas"
+                             styleClass="notes-table"
+                             paginator="true"
+                             rows="10"
+                             paginatorPosition="bottom">
+
+                    <p:column headerText="Diente" style="width: 100px; text-align: center;">
+                        <span class="table-tooth-number">#{note.toothNumber}</span>
+                    </p:column>
+
+                    <p:column headerText="Nota">
+                        <h:outputText value="#{note.note}"/>
+                    </p:column>
+
+                    <p:column headerText="Fecha" style="width: 180px;">
+                        <h:outputText value="#{note.updatedAt}">
+                            <f:convertDateTime pattern="dd/MM/yyyy HH:mm" type="localDateTime"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Acciones" style="width: 180px; text-align: center;">
+                        <p:commandButton icon="pi pi-pencil"
+                                       title="Modificar"
+                                       action="#{odontogramBean.modifyNote(note)}"
+                                       update=":odontogramForm:odontogramPanel :odontogramForm:infoPanel :odontogramForm:messages"
+                                       styleClass="action-btn modify-btn"/>
+                        <p:commandButton icon="pi pi-trash"
+                                       title="Eliminar"
+                                       action="#{odontogramBean.deleteNote(note)}"
+                                       update=":odontogramForm:odontogramPanel :odontogramForm:notesTable :odontogramForm:infoPanel :odontogramForm:messages"
+                                       styleClass="action-btn delete-btn">
+                            <p:confirm header="Confirmar" message="¿Está seguro de eliminar esta nota?" icon="pi pi-exclamation-triangle"/>
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no"/>
+                    <p:commandButton value="Sí" type="button" styleClass="ui-confirmdialog-yes"/>
+                </p:confirmDialog>
+            </div>
+        </h:form>
+    </div>
+</h:body>
+</html>
